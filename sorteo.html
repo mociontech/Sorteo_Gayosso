@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteo Gayosso</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #000;
+        }
+
+        .canvas {
+            position: relative;
+            width: 3840px;
+            height: 2160px;
+            background: #000000;
+            overflow: hidden;
+        }
+
+        .image {
+            position: absolute;
+            image-rendering: crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+        }
+
+        /* Partículas doradas - capa de fondo */
+        .particulas-doradas {
+            width: 5000px;
+            height: 2120px;
+            top: 0;
+            left: -600px;
+            z-index: 1;
+        }
+
+        /* Copos de fondo */
+        .copos-fondo {
+            width: 3840px;
+            height: 958px;
+            top: 1162px;
+            left: 0;
+            z-index: 2;
+        }
+
+        /* Marco navideño */
+        .marco {
+            width: 3840px;
+            height: 1326px;
+            top: 0;
+            left: 0;
+            z-index: 3;
+        }
+
+        /* Logo Gayosso */
+        .logo-gayosso {
+            width: 818px;
+            height: 136px;
+            top: 759px; /* Updated initial position */
+            left: 1511px;
+            z-index: 4;
+            transition: top 0.8s ease;
+        }
+
+        /* Move logo up when lottery is active */
+        .logo-gayosso.lottery-active {
+            top: 559px; /* Updated position for lottery screen */
+        }
+
+        /* Texto Bienvenidos */
+        .bienvenidos {
+            width: 1511px;
+            height: 195px;
+            top: 1147px;
+            left: 1200px;
+            z-index: 5;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .bienvenidos.hiding {
+            animation: fadeOut 0.8s ease forwards;
+        }
+
+        /* Lottery container - hidden by default */
+        .lottery-container {
+            position: absolute;
+            width: 3840px;
+            height: 2160px;
+            top: 0;
+            left: 0;
+            z-index: 6;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+        }
+
+        .lottery-container.active {
+            display: flex;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        /* Lottery message text */
+        .lottery-message {
+            position: absolute;
+            top: 850px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 80px;
+            font-weight: 400;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            line-height: 1.2;
+            z-index: 7;
+            opacity: 0;
+        }
+
+        .lottery-message.show {
+            animation: slideUpCentered 0.8s ease 0.3s forwards;
+        }
+
+        /* Lottery number display */
+        .lottery-number {
+            position: absolute;
+            top: 1150px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 320px;
+            font-weight: 700;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            letter-spacing: 20px;
+            z-index: 7;
+            text-shadow: 0 0 40px rgba(201, 169, 97, 0.6);
+            opacity: 0;
+        }
+
+        .lottery-number.show {
+            animation: slideUpCentered 1s ease 0.6s forwards;
+        }
+
+        .lottery-number.change {
+            animation: numberChangeCentered 0.6s ease forwards;
+        }
+
+        /* Updated button with exact Figma specifications */
+        .comenzar-button {
+            position: absolute;
+            width: 710px;
+            height: 120px;
+            top: 1649px;
+            left: 1565px;
+            z-index: 10;
+            background: linear-gradient(135deg, #c9a961 0%, #b8935a 100%);
+            color: #ffffff;
+            font-size: 60px;
+            font-weight: 700;
+            padding: 26px 74px;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(201, 169, 97, 0.4);
+            transition: all 0.3s ease;
+            font-family: Arial, sans-serif;
+            letter-spacing: 2px;
+            opacity: 1;
+        }
+
+        .comenzar-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(201, 169, 97, 0.6);
+        }
+
+        .comenzar-button:active {
+            transform: translateY(0px);
+            box-shadow: 0 5px 20px rgba(201, 169, 97, 0.4);
+        }
+
+        /* Animation keyframes for transitions */
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(1.1);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideUpCentered {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes numberChangeCentered {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0.8);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1);
+            }
+        }
+
+        @keyframes rollNumbers {
+            0% {
+                opacity: 0.3;
+                transform: translateX(-50%) translateY(-50px);
+            }
+            20% {
+                opacity: 0.5;
+                transform: translateX(-50%) translateY(-30px);
+            }
+            40% {
+                opacity: 0.7;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                opacity: 0.9;
+                transform: translateX(-50%) translateY(10px);
+            }
+            80% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0px) scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0px) scale(1);
+            }
+        }
+
+        .lottery-number.rolling {
+            animation: rollNumbers 0.15s linear;
+        }
+
+        .lottery-number.final {
+            animation: numberChangeCentered 0.6s ease forwards;
+        }
+
+        .reset-button {
+            position: absolute;
+            width: 200px;
+            height: 80px;
+            bottom: 50px;
+            left: 50px;
+            z-index: 11;
+            background: rgba(201, 169, 97, 0.3);
+            color: #c9a961;
+            font-size: 32px;
+            font-weight: 600;
+            border: 2px solid #c9a961;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: Arial, sans-serif;
+            display: none;
+        }
+
+        .reset-button.visible {
+            display: block;
+        }
+
+        .reset-button:hover {
+            background: rgba(201, 169, 97, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(201, 169, 97, 0.4);
+        }
+
+        .reset-button:active {
+            transform: translateY(0px);
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <!-- Capa 1: Partículas doradas (fondo) -->
+        <img src="images/particulas-doradas.png" alt="Partículas doradas" class="image particulas-doradas">
+        
+        <!-- Capa 2: Copos de fondo -->
+        <img src="images/copos-fondo.png" alt="Copos de fondo" class="image copos-fondo">
+        
+        <!-- Capa 3: Marco navideño -->
+        <img src="images/marco.png" alt="Marco navideño" class="image marco">
+        
+        <!-- Capa 4: Logo Gayosso -->
+        <img src="images/logo-gayosso.png" alt="Logo Gayosso" class="image logo-gayosso" id="logoGayosso">
+        
+        <!-- Capa 5: Bienvenidos -->
+        <img src="images/BIENVENIDOS.png" alt="Bienvenidos" class="image bienvenidos" id="bienvenidos">
+
+        <!-- Lottery Screen -->
+        <div class="lottery-container" id="lotteryContainer">
+            <div class="lottery-message" id="lotteryMessage">
+                Si el número que ves es el tuyo<br>¡Eres ganador!
+            </div>
+            <div class="lottery-number" id="lotteryNumber">017001</div>
+        </div>
+
+        <!-- Botón Comenzar -->
+        <button class="comenzar-button" id="comenzarButton">Comenzar</button>
+
+        <!-- Added reset button for restarting the lottery -->
+        <button class="reset-button" id="resetButton">Reiniciar</button>
+    </div>
+
+    <script>
+        // Array to store all available numbers (017001 to 017690)
+        let availableNumbers = [];
+        
+        // Array to store used numbers
+        let usedNumbers = [];
+        
+        // Initialize the available numbers array
+        function initializeNumbers() {
+            for (let i = 17001; i <= 17690; i++) {
+                availableNumbers.push(i);
+            }
+        }
+
+        // Shuffle array using Fisher-Yates algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Get random unique number
+        function getRandomNumber() {
+            if (availableNumbers.length === 0) {
+                return null; // No more numbers available
+            }
+            
+            // Get and remove the first number from available numbers
+            const number = availableNumbers.shift();
+            usedNumbers.push(number);
+            
+            return number;
+        }
+
+        // Format number with leading zeros (e.g., 017001)
+        function formatNumber(number) {
+            return String(number).padStart(6, '0');
+        }
+
+        // Start lottery
+        let lotteryStarted = false;
+        let isAnimating = false;
+
+        function showRollingAnimation(finalNumber, callback) {
+            isAnimating = true;
+            const numberElement = document.getElementById('lotteryNumber');
+            let rollCount = 0;
+            const totalRolls = 15; // Number of times to show random numbers
+            const rollSpeed = 100; // Speed in milliseconds
+
+            const rollInterval = setInterval(() => {
+                // Generate completely random 6-digit number (000000 to 999999)
+                const randomNumber = Math.floor(Math.random() * 1000000);
+                numberElement.textContent = formatNumber(randomNumber);
+                
+                // Add rolling animation
+                numberElement.classList.remove('rolling');
+                void numberElement.offsetWidth; // Trigger reflow
+                numberElement.classList.add('rolling');
+                
+                rollCount++;
+                
+                if (rollCount >= totalRolls) {
+                    clearInterval(rollInterval);
+                    // Show final number with emphasis
+                    setTimeout(() => {
+                        numberElement.classList.remove('rolling');
+                        numberElement.classList.add('final');
+                        numberElement.textContent = formatNumber(finalNumber);
+                        isAnimating = false;
+                        if (callback) callback();
+                    }, 150);
+                }
+            }, rollSpeed);
+        }
+
+        document.getElementById('comenzarButton').addEventListener('click', function() {
+            if (isAnimating) return;
+
+            if (!lotteryStarted) {
+                // First click: Initialize and start lottery
+                initializeNumbers();
+                shuffleArray(availableNumbers);
+                lotteryStarted = true;
+                
+                const bienvenidosImg = document.getElementById('bienvenidos');
+                bienvenidosImg.classList.add('hiding');
+                
+                // Wait for fade out animation to complete before hiding
+                setTimeout(() => {
+                    bienvenidosImg.style.display = 'none';
+                }, 800);
+                
+                const logoGayosso = document.getElementById('logoGayosso');
+                logoGayosso.classList.add('lottery-active');
+                
+                const lotteryContainer = document.getElementById('lotteryContainer');
+                lotteryContainer.classList.add('active');
+                
+                // Trigger animations for message and number
+                setTimeout(() => {
+                    document.getElementById('lotteryMessage').classList.add('show');
+                    document.getElementById('lotteryNumber').classList.add('show');
+                }, 100);
+                
+                // Change button text
+                this.textContent = 'Siguiente';
+                
+                // Show first random number with animation
+                const firstNumber = getRandomNumber();
+                showRollingAnimation(firstNumber);
+
+                document.getElementById('resetButton').classList.add('visible');
+            } else {
+                // Subsequent clicks: Show next random number
+                const nextNumber = getRandomNumber();
+                
+                if (nextNumber === null) {
+                    alert('¡Todos los números han sido sorteados!');
+                    this.disabled = true;
+                    this.style.opacity = '0.5';
+                    this.style.cursor = 'not-allowed';
+                } else {
+                    const numberElement = document.getElementById('lotteryNumber');
+                    numberElement.classList.remove('change', 'show', 'final');
+                    
+                    showRollingAnimation(nextNumber);
+                }
+            }
+        });
+
+        document.getElementById('resetButton').addEventListener('click', function() {
+            if (isAnimating) return;
+
+            // Reset all state
+            availableNumbers = [];
+            usedNumbers = [];
+            lotteryStarted = false;
+
+            // Reset UI
+            const bienvenidosImg = document.getElementById('bienvenidos');
+            bienvenidosImg.style.display = 'block';
+            bienvenidosImg.classList.remove('hiding');
+
+            const logoGayosso = document.getElementById('logoGayosso');
+            logoGayosso.classList.remove('lottery-active');
+
+            const lotteryContainer = document.getElementById('lotteryContainer');
+            lotteryContainer.classList.remove('active');
+
+            const lotteryMessage = document.getElementById('lotteryMessage');
+            lotteryMessage.classList.remove('show');
+
+            const lotteryNumber = document.getElementById('lotteryNumber');
+            lotteryNumber.classList.remove('show', 'change', 'rolling', 'final');
+            lotteryNumber.textContent = '017001';
+
+            const comenzarButton = document.getElementById('comenzarButton');
+            comenzarButton.textContent = 'Comenzar';
+            comenzarButton.disabled = false;
+            comenzarButton.style.opacity = '1';
+            comenzarButton.style.cursor = 'pointer';
+
+            // Hide reset button
+            this.classList.remove('visible');
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,6 @@
-# Sorteo_Gayosso
-Sistema de sorteo interactivo con animaciones para pantalla LED 4K. Sortea números del 017001 al 017690 sin repetición.
+# Sistema de Sorteo Gayosso 150 Años
+
+Sistema de sorteo interactivo diseñado para pantallas LED de alta resolución (3840x2160px). Desarrollado para el sorteo de aniversario de Gayosso.
 
 ## Descripción
 
